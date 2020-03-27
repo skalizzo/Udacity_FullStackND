@@ -1,0 +1,6 @@
+pg_ctl -D "C:\Program Files\PostgreSQL\12\data" start
+
+
+pg_ctl -D "C:\Program Files\PostgreSQL\12\data" restart
+
+cd C:\Program Files\PostgreSQL\12\bin
