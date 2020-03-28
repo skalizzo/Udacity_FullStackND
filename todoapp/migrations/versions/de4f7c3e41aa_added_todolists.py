@@ -5,6 +5,8 @@ Revises: 28b4d3cd458c
 Create Date: 2020-03-28 10:47:06.396078
 
 """
+import traceback
+
 from alembic import op
 import sqlalchemy as sa
 
@@ -24,10 +26,13 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
     op.add_column('todo', sa.Column('list_id', sa.Integer(), nullable=True))
-    op.execute('INSERT INTO todolists (name) VALUES ("Uncategorized");')
-    op.execute('UPDATE todo SET list_id = 1 WHERE list_id IS NULL;')
-    op.update_column('todos', 'list_id', nullable=False)
     op.create_foreign_key(None, 'todo', 'todolists', ['list_id'], ['id'])
+
+    #über psql commands ausführen:
+    #op.execute('INSERT INTO todolists (name) VALUES ("Uncategorized");')
+    #op.execute('UPDATE todo SET list_id = 1 WHERE list_id IS NULL;')
+
+
     # ### end Alembic commands ###
 
 
