@@ -42,6 +42,17 @@ def fill_with_test_data():
         db.session.add(test_data)
     db.session.commit()
 
+def fill_with_test_data2():
+    list = TodoList(name='Urgent')
+    todo = Todo(description='urgent todo 1')
+    todo2 = Todo(description='urgent todo 2')
+    todo3 = Todo(description='urgent todo 3')
+    todo.list = list
+    todo2.list = list
+    todo3.list = list
+    db.session.add(list)
+    db.session.commit()
+#fill_with_test_data2()
 
 # fill_with_test_data()
 
