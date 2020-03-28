@@ -34,19 +34,45 @@
   </head>
   <body>
     <div id="error" class="hidden">Something went wrong!</div>
-    <form id="form" method="post" action="/todos/create">
+
+    <div class="lists-wrapper">
+      <h4>Todolists</h4>
+
+      <form id="form_todolist" method="post" action="/todolist/create">
+      <input type="text" id="name" name="name" />
+      <input type="submit" value="Create" />
+      </form>
+
+      <ul id="lists">
+        {% for list in lists %}
+          <li>
+            <a href="/lists/ {{ list.id }}">{{ list.name }}</a>
+          </li>
+
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="todos-wrapper">
+      <h4>{{active_list.name}}</h4>
+
+      <form id="form" method="post" action="/todos/create">
       <input type="text" id="description" name="description" />
       <input type="submit" value="Create" />
-    </form>
-    <ul id="todos">
-      {% for d in data %}
-      <li>
-        <input class="checkbox-completed" data-id="{{ d.id }}" type="checkbox" {% if d.completed %} checked {% endif %}>
-        {{ d.description }}
-        <button class="delete-button" data-id="{{ d.id }}">&cross;</button>
-      </li>
-      {% endfor %}
-    </ul>
+      </form>
+
+      <ul id="todos">
+        {% if todos %}
+        {% for todo in todos %}
+        <li>
+          <input class="checkbox-completed" data-id="{{ todo.id }}" type="checkbox" {% if todo.completed %} checked {% endif %}>
+          {{ todo.description }}
+          <button class="delete-button" data-id="{{ todo.id }}">&cross;</button>
+        </li>
+        {% endfor %}
+         {% endif %}
+      </ul>
+    </div>
     <script>
       const checkboxes = document.querySelectorAll('.checkbox-completed');
       for (let i = 0; i < checkboxes.length; i++) {
@@ -73,6 +99,40 @@
         }
       }
 
+      <!--neues todolist item darstellen-->
+      const nameInput = document.getElementById('name');
+      document.getElementById('form_todolist').onsubmit = function(e) {
+        e.preventDefault();
+        const name = nameInput.value;
+        nameInput.value = '';
+        fetch('/todolist/create', {
+          method: 'POST',
+          body: JSON.stringify({
+            'name': name,
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        })
+        .then(response => response.json())
+        .then(jsonResponse => {
+          console.log(jsonResponse);
+          li = document.createElement('li');
+          const todolist_link = document.createElement('a');
+          todolist_link.href = "/lists/" + jsonResponse.id;
+          todolist_link.innerText = jsonResponse.name;
+          li.appendChild(todolist_link);
+          document.getElementById('lists').appendChild(li);
+          document.getElementById('error').className = 'hidden';
+        })
+        .catch(function() {
+          document.getElementById('error').className = '';
+        })
+      }
+      <!--neues Todolist item darstellen Ende -->
+
+
+      <!--neues todo item darstellen-->
       const descInput = document.getElementById('description');
       document.getElementById('form').onsubmit = function(e) {
         e.preventDefault();
@@ -110,6 +170,7 @@
           document.getElementById('error').className = '';
         })
       }
+      <!--neues Todo item darstellen Ende -->
 
       const deleteBtns = document.querySelectorAll('.delete-button');
       for (let i = 0; i < deleteBtns.length; i++) {

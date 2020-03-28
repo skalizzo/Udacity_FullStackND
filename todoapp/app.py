@@ -56,6 +56,26 @@ def fill_with_test_data2():
 
 # fill_with_test_data()
 
+@app.route('/todolist/create', methods=['POST'])
+def create_todolist():
+    error = False
+    body = {}
+    try:
+        name = request.get_json()['name']
+        todolist = TodoList(name=name)
+        db.session.add(todolist)
+        db.session.commit()
+        body['name'] = todolist.name
+    except:
+        error = True
+        db.session.rollback()
+        print(sys.exc_info())
+    finally:
+        db.session.close()
+    if error:
+        abort(400)
+    else:
+        return jsonify(body)
 
 @app.route('/todos/create', methods=['POST'])
 def create_todo():
@@ -108,7 +128,10 @@ def set_completed_todo(todo_id):
 
 @app.route('/lists/<list_id>')
 def get_list_todos(list_id):
-    return render_template('index.html', data=Todo.query.filter_by(list_id = list_id).order_by('id').all())
+    return render_template('index.html',
+                           lists=TodoList.query.order_by('id').all(),
+                           active_list=TodoList.query.get(list_id),
+                           todos=Todo.query.filter_by(list_id = list_id).order_by('id').all())
 
 
 @app.route('/')
