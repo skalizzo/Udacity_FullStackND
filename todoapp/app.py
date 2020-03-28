@@ -12,8 +12,9 @@ db = SQLAlchemy(app)
 
 migrate = Migrate(app, db)
 
-#manager = Manager(app)
-#manager.add_command('db', MigrateCommand)
+
+# manager = Manager(app)
+# manager.add_command('db', MigrateCommand)
 
 class Todo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -23,9 +24,9 @@ class Todo(db.Model):
     def __repr__(self):
         return f'ID: {self.id}, description: {self.description}'
 
-#db.create_all() wird nicht mehr benötigt da alles über flask-migrate gesteuert wird
-#db.create_all()
 
+# db.create_all() wird nicht mehr benötigt da alles über flask-migrate gesteuert wird
+# db.create_all()
 
 
 def fill_with_test_data():
@@ -33,29 +34,43 @@ def fill_with_test_data():
         test_data = Todo(description='do a thing ' + str(i))
         db.session.add(test_data)
     db.session.commit()
-#fill_with_test_data()
+
+
+# fill_with_test_data()
 
 
 @app.route('/todos/create', methods=['POST'])
 def create_todo():
-  error = False
-  body = {}
-  try:
-    description = request.get_json()['description']
-    todo = Todo(description=description)
-    db.session.add(todo)
-    db.session.commit()
-    body['description'] = todo.description
-  except:
-    error = True
-    db.session.rollback()
-    print(sys.exc_info())
-  finally:
-    db.session.close()
-  if error:
-    abort(400)
-  else:
-    return jsonify(body)
+    error = False
+    body = {}
+    try:
+        description = request.get_json()['description']
+        todo = Todo(description=description)
+        db.session.add(todo)
+        db.session.commit()
+        body['description'] = todo.description
+    except:
+        error = True
+        db.session.rollback()
+        print(sys.exc_info())
+    finally:
+        db.session.close()
+    if error:
+        abort(400)
+    else:
+        return jsonify(body)
+
+
+@app.route('/todos/<todo_id>', methods=['DELETE'])
+def delete_todo(todo_id):
+    try:
+        Todo.query.filter_by(id=todo_id).delete()
+        db.session.commit()
+    except:
+        db.session.rollback()
+    finally:
+        db.session.close()
+    return jsonify({'success': True})
 
 
 @app.route('/todos/<todo_id>/set-completed', methods=['POST'])
@@ -78,6 +93,5 @@ def index():
     return render_template('index.html', data=Todo.query.order_by('id').all())
 
 
-
 if __name__ == '__main__':
-  app.run(debug=True)
+    app.run(debug=True)

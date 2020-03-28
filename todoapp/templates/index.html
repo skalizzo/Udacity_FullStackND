@@ -43,6 +43,7 @@
       <li>
         <input class="checkbox-completed" data-id="{{ d.id }}" type="checkbox" {% if d.completed %} checked {% endif %}>
         {{ d.description }}
+        <button class="delete-button" data-id="{{ d.id }}">&cross;</button>
       </li>
       {% endfor %}
     </ul>
@@ -97,12 +98,33 @@
           li.appendChild(checkbox);
           const text = document.createTextNode(' ' + jsonResponse.description);
           li.appendChild(text);
+          const btn_delete = document.createElement('button');
+          btn_delete.className = 'delete-button';
+          btn_delete.setAttribute('data-id', jsonResponse.id);
+          btn_delete.innerHTML = '&cross;';
+          li.appendChild(btn_delete);
           document.getElementById('todos').appendChild(li);
           document.getElementById('error').className = 'hidden';
         })
         .catch(function() {
           document.getElementById('error').className = '';
         })
+      }
+
+      const deleteBtns = document.querySelectorAll('.delete-button');
+      for (let i = 0; i < deleteBtns.length; i++) {
+        const btn = deleteBtns[i];
+        btn.onclick = function(e) {
+          const todoID = e.target.dataset['id'];
+          fetch('/todos/' + todoID, {
+            method: 'DELETE'
+          })
+          .then(function() {
+            const item = e.target.parentElement;
+            item.remove();
+          });
+        }
+
       }
     </script>
   </body>
