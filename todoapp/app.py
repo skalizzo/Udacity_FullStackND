@@ -56,6 +56,8 @@ def fill_with_test_data2():
 
 # fill_with_test_data()
 
+active_list = TodoList.query.order_by('id').first()
+
 @app.route('/todolist/create', methods=['POST'])
 def create_todolist():
     error = False
@@ -82,8 +84,10 @@ def create_todo():
     error = False
     body = {}
     try:
+        print('create todo')
         description = request.get_json()['description']
-        todo = Todo(description=description)
+        list_id = request.get_json()['list_id']
+        todo = Todo(description=description, list_id=list_id)
         db.session.add(todo)
         db.session.commit()
         body['description'] = todo.description
@@ -128,9 +132,10 @@ def set_completed_todo(todo_id):
 
 @app.route('/lists/<list_id>')
 def get_list_todos(list_id):
+    active_list = TodoList.query.get(list_id)
     return render_template('index.html',
                            lists=TodoList.query.order_by('id').all(),
-                           active_list=TodoList.query.get(list_id),
+                           active_list=active_list,
                            todos=Todo.query.filter_by(list_id = list_id).order_by('id').all())
 
 
